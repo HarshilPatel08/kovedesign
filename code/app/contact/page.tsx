@@ -5,6 +5,7 @@ import type React from "react"
 import { useState } from "react"
 import { motion } from "framer-motion"
 import { Mail, Phone, MapPin } from "lucide-react"
+import { analytics } from "@/lib/analytics"
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -21,6 +22,10 @@ export default function ContactPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+
+    // Track form submission in Google Analytics
+    analytics.contactFormSubmit()
+
     setSubmitted(true)
     setTimeout(() => {
       setFormData({ name: "", email: "", projectType: "", message: "" })
