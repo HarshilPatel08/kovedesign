@@ -84,16 +84,16 @@ export default function Footer() {
               <li className="flex gap-2 hover:text-accent transition-colors duration-300">
                 <Mail size={16} className="text-accent flex-shrink-0 mt-0.5" />
                 <a
-                  href="mailto:hello@thekovedesign.com"
+                  href="mailto:contact.kovedesigns@gmail.com"
                   className="text-foreground hover:text-accent transition-colors"
                 >
-                  hello@thekovedesign.com
+                  contact.kovedesigns@gmail.com
                 </a>
               </li>
               <li className="flex gap-2 hover:text-accent transition-colors duration-300">
                 <Phone size={16} className="text-accent flex-shrink-0 mt-0.5" />
-                <a href="tel:+919876543210" className="text-foreground hover:text-accent transition-colors">
-                  +91 98765 43210
+                <a href="tel:+919274572711" className="text-foreground hover:text-accent transition-colors">
+                  +91 92745 72711
                 </a>
               </li>
               <li className="flex gap-2">

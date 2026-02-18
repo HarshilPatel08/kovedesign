@@ -15,22 +15,56 @@ export default function ContactPage() {
     message: "",
   })
   const [submitted, setSubmitted] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState("")
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setIsSubmitting(true)
+    setError("")
 
     // Track form submission in Google Analytics
     analytics.contactFormSubmit()
 
-    setSubmitted(true)
-    setTimeout(() => {
-      setFormData({ name: "", email: "", projectType: "", message: "" })
-      setSubmitted(false)
-    }, 3000)
+    try {
+      const response = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          access_key: process.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY || "YOUR_ACCESS_KEY_HERE",
+          name: formData.name,
+          email: formData.email,
+          subject: `New Project Inquiry: ${formData.projectType}`,
+          message: formData.message,
+          from_name: "The Kove Design Website",
+        }),
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        setSubmitted(true)
+        setFormData({ name: "", email: "", projectType: "", message: "" })
+        setTimeout(() => {
+          setSubmitted(false)
+        }, 5000)
+      } else {
+        setError(result.message || "Something went wrong. Please try again.")
+      }
+    } catch (err) {
+      setError("Failed to send message. Please try again later.")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -74,10 +108,10 @@ export default function ContactPage() {
                   <div>
                     <p className="text-sm font-light text-muted mb-1">Email</p>
                     <a
-                      href="mailto:hello@thekovedesign.com"
+                      href="mailto:contact.kovedesigns@gmail.com"
                       className="text-lg font-light text-foreground hover:text-accent transition-colors"
                     >
-                      hello@thekovedesign.com
+                      contact.kovedesigns@gmail.com
                     </a>
                   </div>
                 </div>
@@ -87,10 +121,10 @@ export default function ContactPage() {
                   <div>
                     <p className="text-sm font-light text-muted mb-1">Phone</p>
                     <a
-                      href="tel:+919876543210"
+                      href="tel:+919274572711"
                       className="text-lg font-light text-foreground hover:text-accent transition-colors"
                     >
-                      +91 98765 43210
+                      +91 92745 72711
                     </a>
                   </div>
                 </div>
@@ -114,6 +148,9 @@ export default function ContactPage() {
               onSubmit={handleSubmit}
               className="md:col-span-2 space-y-6"
             >
+              {/* Access Key for Web3Forms (Create via web3forms.com) */}
+              <input type="hidden" name="access_key" value={process.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY} />
+
               <div>
                 <label htmlFor="name" className="block text-sm font-light tracking-wide text-foreground mb-2">
                   Name
@@ -158,11 +195,11 @@ export default function ContactPage() {
                   className="w-full px-4 py-3 bg-background border border-border text-foreground font-light focus:border-accent focus:outline-none transition-colors"
                 >
                   <option value="">Select a project type</option>
-                  <option value="residential">Residential</option>
-                  <option value="hospitality">Hospitality</option>
-                  <option value="interiors">Interiors</option>
-                  <option value="adaptive">Adaptive Reuse</option>
-                  <option value="other">Other</option>
+                  <option value="Residential Design">Residential Design</option>
+                  <option value="Interior Design">Interior Design</option>
+                  <option value="Hospitality">Hospitality</option>
+                  <option value="Renovation">Renovation</option>
+                  <option value="Other">Other</option>
                 </select>
               </div>
 
@@ -178,17 +215,28 @@ export default function ContactPage() {
                   required
                   rows={6}
                   className="w-full px-4 py-3 bg-background border border-border text-foreground font-light focus:border-accent focus:outline-none transition-colors resize-none"
-                  placeholder="Tell us about your project vision..."
+                  placeholder="Tell us about your project vision, budget, and timeline..."
                 ></textarea>
               </div>
 
+              {error && <p className="text-red-500 text-sm">{error}</p>}
+
               <motion.button
                 type="submit"
+                disabled={isSubmitting}
                 whileHover={{ scale: 1.02 }}
-                className="w-full md:w-auto px-8 py-4 bg-accent text-foreground text-sm font-light tracking-widest hover:bg-accent-dark transition-all duration-300"
+                whileTap={{ scale: 0.98 }}
+                className={`w-full md:w-auto px-8 py-4 text-foreground text-sm font-light tracking-widest transition-all duration-300 ${isSubmitting ? "bg-muted cursor-not-allowed" : "bg-accent hover:bg-accent-dark"
+                  }`}
               >
-                {submitted ? "Message Sent!" : "Send Message"}
+                {isSubmitting ? "Sending..." : submitted ? "Message Sent Successfully!" : "Send Message"}
               </motion.button>
+
+              {submitted && (
+                <p className="text-accent text-sm mt-2">
+                  Thank you! We have received your message and will contact you shortly.
+                </p>
+              )}
             </motion.form>
           </div>
 
@@ -205,7 +253,7 @@ export default function ContactPage() {
               width="100%"
               height="100%"
               style={{ border: 0 }}
-              allowFullScreen=""
+              allowFullScreen={true}
               loading="lazy"
             ></iframe>
           </motion.div>
